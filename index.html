@@ -1,0 +1,135 @@
+<style>
+  .deform-widget {
+    font-family: Arial, sans-serif;
+    max-width: 850px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: #f4f6f8;
+    text-align: center;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #0b0f19;
+    border: 2px solid #334155;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .deform-btn {
+    padding: 10px 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #fff;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .deform-btn:hover { background-color: #e2e8f0; }
+  .deform-btn.active { background-color: #10b981; color: white; border-color: #059669; }
+
+  .description-box {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 1rem;
+    color: #1e293b;
+    text-align: left;
+    min-height: 80px;
+    line-height: 1.4;
+  }
+</style>
+
+<div class="deform-widget">
+  <h2>Graphic Overlays & Lattice Deformers Studio</h2>
+  <p>Explore how custom deformers break rigid mathematical volume rules to inject cartoon elasticity into 3D space.</p>
+
+  <div class="stage" id="deformStage">
+    <!-- Rendered dynamically via JS -->
+  </div>
+
+  <div class="nav-grid">
+    <button class="deform-btn active" onclick="setDeformMode('rigid')">1. Default Rigid Stretch</button>
+    <button class="deform-btn" onclick="setDeformMode('lattice')">2. Lattice Deformers</button>
+    <button class="deform-btn" onclick="setDeformMode('elasticity')">3. Cartoon Smear & Squash</button>
+  </div>
+
+  <div class="description-box" id="deformDesc">
+    <strong>Default Computer Problem (Rigid Volume):</strong> Standard 3D models obey strict mathematical volume rules. When stretched, they narrow uniformly, looking stiff, mechanical, or unnaturally rubbery rather than expressive.
+  </div>
+</div>
+
+<script>
+  const stage = document.getElementById('deformStage');
+  const desc = document.getElementById('deformDesc');
+  const buttons = document.querySelectorAll('.deform-widget .deform-btn');
+
+  const deformModes = {
+    rigid: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <text x="225" y="35" fill="#64748b" font-size="12" font-weight="bold" text-anchor="middle">Strict Mathematical Volume Preservation</text>
+              <!-- Stiff Uniformly Scaled Cylinder/Box -->
+              <rect x="195" y="60" width="60" height="130" rx="15" fill="#475569" stroke="#94a3b8" stroke-width="2"/>
+              <!-- Inner wire details -->
+              <line x1="195" y1="100" x2="255" y2="100" stroke="#334155" stroke-width="2"/>
+              <line x1="195" y1="140" x2="255" y2="140" stroke="#334155" stroke-width="2"/>
+              <text x="225" y="215" fill="#94a3b8" font-size="11" text-anchor="middle">Stiff, mechanical scaling that lacks organic caricature</text>
+            </svg>`,
+      text: "<strong>Default Computer Problem (Rigid Volume):</strong> Standard 3D models follow strict mathematical formulas. When an object stretches, it must thin out proportionally, resulting in stiff, mechanical motion that lacks character expression."
+    },
+    lattice: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <text x="225" y="30" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Custom Lattice Deformer Cage</text>
+              <!-- Dotted lattice box control cage -->
+              <rect x="150" y="55" width="150" height="130" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+              <!-- Lattice control points -->
+              <circle cx="150" cy="55" r="5" fill="#38bdf8"/><circle cx="225" cy="55" r="5" fill="#38bdf8"/><circle cx="300" cy="55" r="5" fill="#38bdf8"/>
+              <circle cx="150" cy="185" r="5" fill="#38bdf8"/><circle cx="225" cy="185" r="5" fill="#38bdf8"/><circle cx="300" cy="185" r="5" fill="#38bdf8"/>
+              
+              <!-- Deformed character inside -->
+              <path d="M 180 70 Q 260 50 280 120 Q 300 190 200 170 Q 140 150 180 70 Z" fill="#0284c7" opacity="0.8" stroke="#bae6fd" stroke-width="2"/>
+              <text x="225" y="225" fill="#bae6fd" font-size="11" text-anchor="middle">Animators manipulate external cage handles to warp geometry freely</text>
+            </svg>`,
+      text: "<strong>The Stylized Solution (Lattice Deformers):</strong> Modern pipelines wrap 3D models inside digital control cages (lattices). By shifting the cage handles, artists can warp, bend, and pull 3D forms without being restricted by standard math."
+    },
+    elasticity: {
+      svg: `<svg width="450" height="250" viewBox="0 0 450 250">
+              <text x="225" y="30" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">Non-Uniform Smear & Squash (Defying Volume)</text>
+              
+              <!-- Wild cartoon smear shape -->
+              <path d="M 110 110 Q 225 50 340 140 Q 380 170 320 185 Q 180 200 130 150 Z" fill="#059669" stroke="#6ee7b7" stroke-width="2.5"/>
+              <!-- Eyes/Face features skewed -->
+              <circle cx="280" cy="115" r="10" fill="#fff"/><circle cx="283" cy="115" r="4" fill="#000"/>
+              <path d="M 270 140 Q 290 150 310 130" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+
+              <text x="225" y="230" fill="#6ee7b7" font-size="11" text-anchor="middle">Pure cartoon elasticity and expressive exaggeration injected into 3D space</text>
+            </svg>`,
+      text: "<strong>Cartoon Smear & Squash:</strong> During high-speed actions like punches or shock gasps, deformers allow 3D geometry to squash, stretch, and smear wildly into graphic 2D-style shapes, injecting raw cartoon energy into digital space."
+    }
+  };
+
+  function setDeformMode(mode) {
+    buttons.forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    stage.innerHTML = deformModes[mode].svg;
+    desc.innerHTML = deformModes[mode].text;
+  }
+</script>
